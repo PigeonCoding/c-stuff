@@ -27,9 +27,6 @@ typedef struct {
   size_t size;
 } arena;
 
-/// @brief allocates memory for the arena
-/// @param size_t size 
-/// @return arena
 arena alloc_arena(size_t size) {
   arena r;
   r.base_pointer = malloc(size);
@@ -43,10 +40,6 @@ arena alloc_arena(size_t size) {
   return r;
 }
 
-/// @brief gets the pointer to the next blloc of data in the arena
-/// @param arena* a 
-/// @param size_t size (in bits) 
-/// @return void* to data (need to cast manually in c++)
 void *get_data_pointer(arena *a, size_t size) {
   if (size < a->size - a->current_offset) {
     void *out = (a->base_pointer + a->current_offset);
@@ -57,15 +50,11 @@ void *get_data_pointer(arena *a, size_t size) {
   exit(1);
 }
 
-/// @brief resets an arena for new use (data is not overwritten it still exists except fist one)
-/// @param arena* a 
 void reset_arena(arena* a) {
   a->current_offset = 0;
   *(int*)(a->base_pointer) = 0;
 }
 
-/// @brief frees the arena memory
-/// @param arena* a 
 void free_arena(arena *a) {
   free(a->base_pointer);
   a->base_pointer = NULL;

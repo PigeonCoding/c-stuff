@@ -1,3 +1,4 @@
+#pragma once
 #include "arena.h"
 #include <stdio.h>
 #include <string.h>
@@ -35,9 +36,7 @@ typedef struct
   size_t type_size;
 } vector;
 
-/// @brief creates a vector for a specified type_size
-/// @param size_t type_siz
-/// @return vector
+
 vector alloc_vector(size_t type_siz)
 {
   vector vec;
@@ -49,9 +48,7 @@ vector alloc_vector(size_t type_siz)
   return vec;
 }
 
-/// @brief preallocates space for the vector and keeps the data (pointers to the data are invalid now)
-/// @param vector* vec
-/// @param size_t num
+
 void prealloc_vector(vector *vec, size_t num)
 {
   arena temp_a = alloc_arena(vec->type_size * num);
@@ -63,9 +60,6 @@ void prealloc_vector(vector *vec, size_t num)
   vec->arena.size = temp_a.size;
 }
 
-/// @brief push data (must be same size as vec.type_size) to the vector using memcpy
-/// @param vector* vec
-/// @param void* v
 void push_vector(vector *vec, void *v)
 {
   vec->length++;
@@ -80,22 +74,16 @@ void push_vector(vector *vec, void *v)
   memcpy(g, v, vec->type_size);
 }
 
-/// @brief get data from the vector for a given index (0 based)
-/// @param vector* vec
-/// @param size_t index
-/// @return void* to data (need to cast manually in c++)
 void *get_from_vec(vector *vec, size_t index)
 {
-  if (index > vec->type_size)
+  if (index > vec->length)
   {
-    fprintf(stderr, "ERROR: index out of range");
+    fprintf(stderr, "ERROR: index out of range\n");
     exit(1);
   }
   return vec->arena.base_pointer + vec->type_size * index;
 }
 
-/// @brief frees the vector's arena and zeros out the values
-/// @param vector* vec
 void free_vector(vector *vec)
 {
   free_arena(&vec->arena);
@@ -103,9 +91,6 @@ void free_vector(vector *vec)
   vec->type_size = 0;
 }
 
-/// @brief pops an element from the vector for a given index (all pointers to data after the pop are now invalid)
-/// @param vector* vec
-/// @param size_t* index
 void pop_vector(vector *vec, size_t index)
 {
   if (index > vec->type_size)
