@@ -29,6 +29,7 @@ string alloc_string() {
 }
 
 void push_char_string(string *s, char c) {
+
   push_vector(&s->data, (void *)&c);
   s->length += 1;
 }
@@ -40,7 +41,10 @@ void push_string(string *s, char *c) {
   }
 }
 
-char *get_string(string *s) { return (char *)s->data.arena.base_pointer; }
+char *get_string(string *s) {
+  *(char *)(s->data.arena.base_pointer + s->length) = '\0';
+  return (char *)s->data.arena.base_pointer;
+}
 
 void free_string(string *s) {
   free_vector(&s->data);

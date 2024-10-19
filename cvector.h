@@ -29,16 +29,13 @@
 }
 */
 
-typedef struct
-{
+typedef struct {
   arena arena;
   size_t length;
   size_t type_size;
 } vector;
 
-
-vector alloc_vector(size_t type_siz)
-{
+vector alloc_vector(size_t type_siz) {
   vector vec;
 
   vec.arena = alloc_arena(type_siz * 2);
@@ -48,61 +45,55 @@ vector alloc_vector(size_t type_siz)
   return vec;
 }
 
+void prealloc_vector(vector *vec, size_t num) {
+  // arena temp_a = alloc_arena(vec->type_size * num);
 
-void prealloc_vector(vector *vec, size_t num)
-{
-  arena temp_a = alloc_arena(vec->type_size * num);
+  // memcpy(temp_a.base_pointer, vec->arena.base_pointer,
+  //        vec->length * vec->type_size);
 
-  memcpy(temp_a.base_pointer, vec->arena.base_pointer,
-         vec->length * vec->type_size);
-
-  vec->arena.base_pointer = temp_a.base_pointer;
-  vec->arena.size = temp_a.size;
+  // vec->arena.base_pointer = temp_a.base_pointer;
+  // vec->arena.size = temp_a.size;
+  vec->arena.base_pointer =
+      realloc(vec->arena.base_pointer, vec->type_size * num * 2 + 1);
+  vec->arena.size = vec->type_size * num * 2 + 1;
 }
 
-void push_vector(vector *vec, void *v)
-{
+void push_vector(vector *vec, void *v) {
   vec->length++;
-  
-  if (vec->length * vec->type_size >= vec->arena.size)
-  {
+
+  if (vec->length * vec->type_size < vec->arena.size) {
     prealloc_vector(vec, vec->length * 2);
   }
-  
-  
+
   void *g = get_data_pointer(&vec->arena, vec->type_size);
   memcpy(g, v, vec->type_size);
 }
 
-void *get_from_vec(vector *vec, size_t index)
-{
-  if (index > vec->length)
-  {
+void *get_from_vec(vector *vec, size_t index) {
+  if (index > vec->length) {
     fprintf(stderr, "ERROR: index out of range\n");
     exit(1);
   }
   return vec->arena.base_pointer + vec->type_size * index;
 }
 
-void free_vector(vector *vec)
-{
+void free_vector(vector *vec) {
   free_arena(&vec->arena);
   vec->length = 0;
   vec->type_size = 0;
 }
 
-void pop_vector(vector *vec, size_t index)
-{
-  if (index > vec->type_size)
-  {
-    fprintf(stderr, "ERROR: index out of range");
+void pop_vector(vector *vec, size_t index) {
+  // printf("%zu and %zu\n", vec->length, index + 1);
+  if (index + 1 > vec->length) {
+    fprintf(stderr, "ERROR: index out of range\n");
     exit(1);
   }
-  size_t size = vec->length - index - 1;
-  memcpy(
-      vec->arena.base_pointer + index * vec->type_size,       // dest
-      vec->arena.base_pointer + (index + 1) * vec->type_size, // src
-      size                                                    // size
+  size_t size = vec->length - index;
+  printf("%zu\n", size);
+  memcpy(vec->arena.base_pointer + (index)*vec->type_size,       // dest
+         vec->arena.base_pointer + (index + 1) * vec->type_size, // src
+         size                                                    // size
   );
   vec->length -= 1;
 }
