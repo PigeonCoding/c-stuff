@@ -69,18 +69,15 @@ void prealloc_vector(vector *vec, size_t num)
 void push_vector(vector *vec, void *v)
 {
   vec->length++;
-  if (vec->length * vec->type_size < vec->arena.size)
-  {
-    void *g = get_data_pointer(&vec->arena, vec->type_size);
-    memcpy(g, v, vec->type_size);
-  }
-  else
+  
+  if (vec->length * vec->type_size >= vec->arena.size)
   {
     prealloc_vector(vec, vec->length * 2);
-
-    void *g = get_data_pointer(&vec->arena, vec->type_size);
-    memcpy(g, v, vec->type_size);
   }
+  
+  
+  void *g = get_data_pointer(&vec->arena, vec->type_size);
+  memcpy(g, v, vec->type_size);
 }
 
 /// @brief get data from the vector for a given index (0 based)
