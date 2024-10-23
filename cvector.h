@@ -83,6 +83,7 @@ void free_vector(vector *vec) {
   vec->type_size = 0;
 }
 
+// TODO: make it somewhat working (it works half of the time)
 void pop_vector(vector *vec, size_t index) {
   // printf("%zu and %zu\n", vec->length, index + 1);
   if (index + 1 > vec->length) {
@@ -92,8 +93,8 @@ void pop_vector(vector *vec, size_t index) {
   size_t size = vec->length - index;
   printf("%zu\n", size);
   memcpy(vec->arena.base_pointer + (index)*vec->type_size,       // dest
-         vec->arena.base_pointer + (index + 1) * vec->type_size, // src
-         size                                                    // size
+         vec->arena.base_pointer + (index + 1) * vec->type_size,  // src
+         size                                                       // size
   );
   vec->length -= 1;
 }

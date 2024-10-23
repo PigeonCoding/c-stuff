@@ -7,9 +7,7 @@
 
   push_string(&test_string, "Hello World!");
 
-  char str[test_string.length] = {};
-  get_string(&test_string, str);
-  printf("%s\n", str);
+  printf("%s\n", get_string(&test_string));
 
   free_string(&test_string);
 
