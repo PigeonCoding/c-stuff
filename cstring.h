@@ -18,20 +18,18 @@
 
 typedef struct {
   vector data;
-  size_t length;
+  size_t *length;
 } string;
 
 string alloc_string() {
   string s;
   s.data = alloc_vector(sizeof(char));
-  s.length = 0;
+  s.length = &s.data.length;
   return s;
 }
 
 void push_char_string(string *s, char c) {
-
   push_vector(&s->data, (void *)&c);
-  s->length += 1;
 }
 
 void push_string(string *s, char *c) {
@@ -42,11 +40,10 @@ void push_string(string *s, char *c) {
 }
 
 char *get_string(string *s) {
-  *(char *)(s->data.arena.base_pointer + s->length) = '\0';
+  *(char *)(s->data.arena.base_pointer + *s->length) = '\0';
   return (char *)s->data.arena.base_pointer;
 }
 
 void free_string(string *s) {
   free_vector(&s->data);
-  s->length = 0;
 }

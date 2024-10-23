@@ -6,7 +6,7 @@
   arena r = alloc_arena(sizeof(int) * 3);
 
   int *test = get_space_arena(&r, sizeof(int));
-  *test = 2006;
+  *test = 1999;
   char *testc = get_space_arena(&r, sizeof(char));
   *testc = 101;
   float *testf = get_space_arena(&r, sizeof(float));
@@ -41,12 +41,17 @@ arena alloc_arena(size_t size) {
 }
 
 void *get_data_pointer(arena *a, size_t size) {
+  if (a->base_pointer == NULL) {
+    fprintf(stderr, "base pointer is null either it was not initialized or it has been freed :)");
+    exit(1);
+  }
+
   if (size < a->size - a->current_offset) {
     void *out = (a->base_pointer + a->current_offset);
     a->current_offset += size;
     return out;
   }
-  printf("ERROR: tried to allocate more than the arena had\n");
+  printf("ERROR: tried to allocate more than the arena had %zu > %zu\n", size , a->size - a->current_offset);
   exit(1);
 }
 
