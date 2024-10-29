@@ -1,6 +1,5 @@
 #pragma once
 #include "cvector.h"
-#include <stdio.h>
 
 /*
   string test_string = alloc_string();
@@ -28,6 +27,14 @@ string alloc_string() {
 
 void push_char_string(string *s, char c) {
   push_vector(&s->data, (void *)&c);
+}
+
+void push_string_whitespace(string *s, char *c) {
+  char *h;
+  for (h = (char *)c; *h; h++) {
+    push_char_string(s, *h);
+  }
+  push_char_string(s, ' ');
 }
 
 void push_string(string *s, char *c) {
