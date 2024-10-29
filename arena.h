@@ -42,7 +42,7 @@ arena alloc_arena(size_t size) {
 
 void *get_data_pointer(arena *a, size_t size) {
   if (a->base_pointer == NULL) {
-    fprintf(stderr, "base pointer is null either it was not initialized or it has been freed :)");
+    fprintf(stderr, "base pointer is null either it was not initialized or it has been freed :)\n");
     exit(1);
   }
 
