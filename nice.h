@@ -2,10 +2,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#define test(f) if (f < 0 || f == 0) { \
+#define test(f) if (f < 0 || f == 0) {                  \
           dprintf(P_ERR, "an error has occured\n");     \
           exit(1);                                      \
-        }
+        }                                               \
 
 #define P_INFO 1
 #define P_WARN 2
@@ -27,7 +27,8 @@
     fprintf(stderr, "[ERROR]: ");            \
     fprintf(stderr, __VA_ARGS__);            \
     break;                                   \
-  }
+  }                                          \
+  
 
 float shit_sqrt(float in, float div) {
   float s = in / div;
