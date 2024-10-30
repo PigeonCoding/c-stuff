@@ -1,6 +1,7 @@
 #pragma once
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 /*
   vector vec = alloc_vector(sizeof(int));
@@ -31,14 +32,27 @@
 }
 */
 
-typedef struct {
-  size_t length;
-  size_t type_size;
+#ifndef V_MALLOC
+#define V_MALLOC malloc
+#endif
 
+typedef struct {
   void *base_pointer;
   size_t size;
+  size_t type_size;
+  size_t length;
 } vector;
 
+
+void *get_data_pointer(vector *a, size_t size);
+vector alloc_vector(size_t type_siz);
+void prealloc_vector(vector *vec, size_t num);
+void push_vector(vector *vec, void *v);
+void *get_from_vec(vector *vec, size_t index);
+void reset_vector(vector *vec);
+void free_vector(vector *vec);
+
+#ifdef C_VECTOR
 void *get_data_pointer(vector *a, size_t size) {
   if (a->base_pointer == NULL) {
     fprintf(stderr, "base pointer is null either it was not initialized or it "
@@ -58,7 +72,7 @@ void *get_data_pointer(vector *a, size_t size) {
 vector alloc_vector(size_t type_siz) {
   vector vec;
 
-  vec.base_pointer = malloc(type_siz * 2);
+  vec.base_pointer = V_MALLOC(type_siz * 2);
   if (vec.base_pointer == NULL) {
     printf("buy more ram :)");
     exit(1);
@@ -109,9 +123,9 @@ void free_vector(vector *vec) {
 }
 
 // TODO: make it somewhat working (it works half of the time)
-void pop_vector(vector *vec, size_t index) {
-  fprintf(stderr, "pop not yet implemented\n");
-  exit(1);
+// void pop_vector(vector *vec, size_t index) {
+//   fprintf(stderr, "pop not yet implemented\n");
+//   exit(1);
   // printf("%zu and %zu\n", vec->length, index + 1);
   // if (index + 1 > vec->length) {
   //   fprintf(stderr, "ERROR: index out of range\n");
@@ -123,4 +137,5 @@ void pop_vector(vector *vec, size_t index) {
   //        size                                                 // size
   // );
   // vec->length -= 1;
-}
+// }
+#endif // C_VECTOR
