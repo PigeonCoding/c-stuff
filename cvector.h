@@ -44,16 +44,16 @@ typedef struct {
 } vector;
 
 
-void *get_data_pointer(vector *a, size_t size);
 vector alloc_vector(size_t type_siz);
 void prealloc_vector(vector *vec, size_t num);
+void *get_vector_data_pointer(vector *a, size_t size);
 void push_vector(vector *vec, void *v);
 void *get_from_vec(vector *vec, size_t index);
 void reset_vector(vector *vec);
 void free_vector(vector *vec);
 
 #ifdef C_VECTOR
-void *get_data_pointer(vector *a, size_t size) {
+void *get_vector_data_pointer(vector *a, size_t size) {
   if (a->base_pointer == NULL) {
     fprintf(stderr, "base pointer is null either it was not initialized or it "
                     "has been freed:)\n ");
@@ -97,7 +97,7 @@ void push_vector(vector *vec, void *v) {
     prealloc_vector(vec, vec->length * 2 + 1);
   }
 
-  void *g = get_data_pointer(vec, vec->type_size);
+  void *g = get_vector_data_pointer(vec, vec->type_size);
   memcpy(g, v, vec->type_size);
 }
 

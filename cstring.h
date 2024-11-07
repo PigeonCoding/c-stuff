@@ -8,7 +8,7 @@
 
   push_string(&test_string, "Hello World!");
 
-  printf("%s\n", get_string_view(&test_string));
+  printf("%s\n", get_string_c(&test_string));
 
   free_string(&test_string);
 
@@ -31,11 +31,11 @@ typedef struct {
 
 string alloc_string();
 void prealloc_string(string *s, size_t num);
-void *get_data_pointer(string *a, size_t size);
+void *get_string_data_pointer(string *a, size_t size);
 void push_char_string(string *s, char c);
 void push_string_whitespace(string *s, char *c);
 void push_string(string *s, char *c);
-char *get_string_view(string *s);
+char *get_string_c(string *s);
 void free_string(string *s);
 
 #ifdef C_STRING
@@ -57,7 +57,7 @@ void prealloc_string(string *s, size_t num) {
   s->size = type_size * num * 2;
 }
 
-void *get_data_pointer(string *a, size_t size) {
+void *get_string_data_pointer(string *a, size_t size) {
   if (a->base_pointer == NULL) {
     fprintf(stderr, "base pointer is null either it was not initialized or it "
                     "has been freed:)\n ");
@@ -81,7 +81,7 @@ void push_char_string(string *s, char c) {
     prealloc_string(s, s->length * 2 + 1);
   }
 
-  void *g = get_data_pointer(s, type_size);
+  void *g = get_string_data_pointer(s, type_size);
   memcpy(g, (void*)(&c), type_size);
 }
 
@@ -100,7 +100,7 @@ void push_string(string *s, char *c) {
   }
 }
 
-char *get_string_view(string *s) {
+char *get_string_c(string *s) {
   *(char *)(s->base_pointer + s->length) = '\0';
   return (char *)s->base_pointer;
 }
