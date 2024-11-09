@@ -3,14 +3,14 @@
 #include <stdio.h>
 
 #define test(f) if (f < 0 || f == 0) {                  \
-          dprintf(P_ERR, "an error has occured\n");     \
+          eprintf(P_ERR, "an error has occured\n");     \
           exit(1);                                      \
         }                                               \
 
 #define P_INFO 1
 #define P_WARN 2
 #define P_ERR 3
-#define dprintf(type, ...)                   \
+#define eprintf(type, ...)                   \
   switch (type) {                            \
   default:                                   \
     printf(__VA_ARGS__);                     \
