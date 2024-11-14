@@ -1,7 +1,4 @@
 #pragma once
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 /*
   string test_string = alloc_string();
@@ -11,15 +8,30 @@
   printf("%s\n", get_string_c(&test_string));
 
   free_string(&test_string);
-
-  return 0;
 */
 
 
 #define type_size sizeof(char)
 
-#ifndef V_MALLOC
+#ifndef V_ALLOC
+#include <stdlib.h>
 #define V_MALLOC malloc
+#define V_REALLOC realloc
+#endif
+
+#ifndef V_EXIT
+#include <stdlib.h>
+#define V_EXIT(x) exit(x)
+#endif
+
+#ifndef V_MEMCPY
+#include <string.h>
+#define V_MEMCPY memcpy
+#endif
+
+#ifndef V_FPRINTF
+#include <stdio.h>
+#define V_FPRINTF fprintf
 #endif
 
 typedef struct {
@@ -43,8 +55,8 @@ string alloc_string() {
   string s;
   s.base_pointer = V_MALLOC(type_size * 2);
   if (s.base_pointer == NULL) {
-    printf("buy more ram :)");
-    exit(1);
+    V_FPRINTF(stderr, "buy more ram :)");
+    V_EXIT(1);
   }
 
   s.size = type_size * 2;
@@ -53,24 +65,24 @@ string alloc_string() {
 }
 
 void prealloc_string(string *s, size_t num) {
-  s->base_pointer = realloc(s->base_pointer, type_size * num * 2);
+  s->base_pointer = V_REALLOC(s->base_pointer, type_size * num * 2);
   s->size = type_size * num * 2;
 }
 
 void *get_string_data_pointer(string *a, size_t size) {
   if (a->base_pointer == NULL) {
-    fprintf(stderr, "base pointer is null either it was not initialized or it "
+    V_FPRINTF(stderr, "base pointer is null either it was not initialized or it "
                     "has been freed:)\n ");
-    exit(1);
+    V_EXIT(1);
   }
 
   if (size < a->size - (a->length - 1) * type_size) {
     void *out = (a->base_pointer + (a->length - 1) * type_size);
     return out;
   }
-  printf("ERROR: tried to allocate more than the arena had %zu > %zu\n", size,
+  V_FPRINTF(stderr, "ERROR: tried to allocate more than the arena had %zu > %zu\n", size,
          a->size - (a->length - 1) * type_size);
-  exit(1);
+  V_EXIT(1);
 }
 
 void push_char_string(string *s, char c) {
@@ -82,7 +94,7 @@ void push_char_string(string *s, char c) {
   }
 
   void *g = get_string_data_pointer(s, type_size);
-  memcpy(g, (void*)(&c), type_size);
+  V_MEMCPY(g, (void*)(&c), type_size);
 }
 
 void push_string_whitespace(string *s, char *c) {
