@@ -2,7 +2,7 @@
 
 /*
   vector vec = alloc_vector_sz(int); // == alloc_vector(sizeof(int))
-  prealloc_vector(&vec, 4); // allocates (4 * vec.type_size) bits
+  prealloc_vector(&vec, 4); // allocates (4 * vec.type_size) in arena
 
   int h1 = 111;
   int h2 = 112;
