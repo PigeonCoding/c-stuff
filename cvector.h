@@ -1,7 +1,4 @@
 #pragma once
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 /*
   vector vec = alloc_vector(sizeof(int));
@@ -9,31 +6,52 @@
 
   int h1 = 111;
   int h2 = 112;
-  int h3 = 113;
-  int h4 = 114;
 
-  push_vector(&vec, &h1);
-  push_vector(&vec, &h2);
-  push_vector(&vec, &h3);
-  push_vector(&vec, &h4);
+  push_vector_by_ref(vec, h1);
+  push_vector_by_ref(vec, h2);
+  push_vector_by_val(vec, 113, int);
+  push_vector_by_val(vec, 114, int);
 
-  // pop_vector(&vec, 0);
-
-  for (size_t i = 0; i < vec.length; i++)
-  {
+  for (size_t i = 0; i < vec.length; i++) {
     int *g = (int *)get_from_vec(&vec, i);
-    printf("%zu: %d\n", i, *g);
+    printf("value: %i\n", *g);
   }
 
+  printf("--------------\n");
+  pop_element_from_vec(&vec, 1);
+
+  vforeach_val(int, el, vec, i) 
+    printf("value: %i\n", el);
+  end_foreach
+
+  printf("--------------\n");
+
   reset_vector(&vec);
-  printf("%zu\n", vec.length);
+  printf("new size: %zu\n", vec.length);
 
   free_vector(&vec);
 }
 */
 
-#ifndef V_MALLOC
+#ifndef V_ALLOC
+#include <stdlib.h>
 #define V_MALLOC malloc
+#define V_REALLOC realloc
+#endif
+
+#ifndef V_EXIT
+#include <stdlib.h>
+#define V_EXIT(x) exit(x)
+#endif
+
+#ifndef V_MEMCPY
+#include <string.h>
+#define V_MEMCPY memcpy
+#endif
+
+#ifndef V_FPRINTF
+#include <stdio.h>
+#define V_FPRINTF fprintf
 #endif
 
 typedef struct {
@@ -43,20 +61,56 @@ typedef struct {
   size_t length;
 } vector;
 
-
 vector alloc_vector(size_t type_siz);
+#define alloc_vector_sz(sz) alloc_vector(sizeof(sz))
 void prealloc_vector(vector *vec, size_t num);
 void *get_vector_data_pointer(vector *a, size_t size);
-void push_vector(vector *vec, void *v);
 void *get_from_vec(vector *vec, size_t index);
 void reset_vector(vector *vec);
 void free_vector(vector *vec);
+void pop_element_from_vec(vector *vec, size_t index);
+#define push_vector_by_val(vec, v, type) push_vector_by_val_def(vec, v, type)
+#define push_vector_by_ref(vec, v) push_vector_by_ref_def(vec, v)
+#define vforeach_ref(type, name, vector, i)                                    \
+  vforeach_ref_def(type, name, vector, i)
+#define vforeach_val(type, name, vector, i)                                    \
+  vforeach_val_def(type, name, vector, i)
+#define end_foreach }
 
 #ifdef C_VECTOR
+
+#define vforeach_ref_def(type, name, vector, i)                                \
+  for (unsigned long i = 0; i < vector.length; i++) {                          \
+    type *name = (type *)get_from_vec(&vector, i);
+#define vforeach_val_def(type, name, vector, i)                                \
+  for (unsigned long i = 0; i < vector.length; i++) {                          \
+    type name = *(type *)get_from_vec(&vector, i);
+
+#define push_vector_by_val_def(vec, v, type)                                   \
+  {                                                                            \
+    vec.length++;                                                              \
+    if (vec.length * vec.type_size < vec.size) {                               \
+      prealloc_vector(&vec, vec.length * 2 + 1);                               \
+    }                                                                          \
+    type *g = (type *)get_vector_data_pointer(&vec, vec.type_size);            \
+    *g = v;                                                                    \
+  }
+
+#define push_vector_by_ref_def(vec, v)                                         \
+  {                                                                            \
+    vec.length++;                                                              \
+    if (vec.length * vec.type_size < vec.size) {                               \
+      prealloc_vector(&vec, vec.length * 2 + 1);                               \
+    }                                                                          \
+    void *g = get_vector_data_pointer(&vec, vec.type_size);                    \
+    memcpy(g, &v, vec.type_size);                                              \
+  }
+
 void *get_vector_data_pointer(vector *a, size_t size) {
   if (a->base_pointer == NULL) {
-    fprintf(stderr, "base pointer is null either it was not initialized or it "
-                    "has been freed:)\n ");
+    V_FPRINTF(stderr,
+              "base pointer is null either it was not initialized or it "
+              "has been freed:)\n ");
     exit(1);
   }
 
@@ -64,8 +118,9 @@ void *get_vector_data_pointer(vector *a, size_t size) {
     void *out = (a->base_pointer + (a->length - 1) * a->type_size);
     return out;
   }
-  printf("ERROR: tried to allocate more than the arena had %zu > %zu\n", size,
-         a->size - (a->length - 1) * a->type_size);
+  V_FPRINTF(stderr,
+            "ERROR: tried to allocate more than the arena had %zu > %zu\n",
+            size, a->size - (a->length - 1) * a->type_size);
   exit(1);
 }
 
@@ -74,7 +129,7 @@ vector alloc_vector(size_t type_siz) {
 
   vec.base_pointer = V_MALLOC(type_siz * 2);
   if (vec.base_pointer == NULL) {
-    printf("buy more ram :)");
+    V_FPRINTF(stderr, "buy more ram :)");
     exit(1);
   }
 
@@ -90,20 +145,9 @@ void prealloc_vector(vector *vec, size_t num) {
   vec->size = vec->type_size * num * 2;
 }
 
-void push_vector(vector *vec, void *v) {
-  vec->length++;
-
-  if (vec->length * vec->type_size < vec->size) {
-    prealloc_vector(vec, vec->length * 2 + 1);
-  }
-
-  void *g = get_vector_data_pointer(vec, vec->type_size);
-  memcpy(g, v, vec->type_size);
-}
-
 void *get_from_vec(vector *vec, size_t index) {
   if (index >= vec->length) {
-    fprintf(stderr, "ERROR: index out of range\n");
+    V_FPRINTF(stderr, "ERROR: index out of range\n");
     exit(1);
   }
   return vec->base_pointer + vec->type_size * index;
@@ -122,20 +166,23 @@ void free_vector(vector *vec) {
   vec->type_size = 0;
 }
 
-// TODO: make it somewhat working (it works half of the time)
-// void pop_vector(vector *vec, size_t index) {
-//   fprintf(stderr, "pop not yet implemented\n");
-//   exit(1);
-  // printf("%zu and %zu\n", vec->length, index + 1);
-  // if (index + 1 > vec->length) {
-  //   fprintf(stderr, "ERROR: index out of range\n");
-  //   exit(1);
-  // }
-  // size_t size = vec->length - index;
-  // memcpy(vec->base_pointer + (index)*vec->type_size,       // dest
-  //        vec->base_pointer + (index + 1) * vec->type_size,  // src
-  //        size                                                 // size
-  // );
-  // vec->length -= 1;
-// }
+void pop_element_from_vec(vector *vec, size_t index) {
+  if (index + 1 > vec->length) {
+    V_FPRINTF(stderr, "[ERROR]: index out of range %zu\n", index + 1);
+    exit(1);
+  }
+
+  if (index == vec->length - 1) {
+    vec->length -= 1;
+    return;
+  }
+
+  // TODO: use memcpy to directly shift memory (was buggy for some reason)
+  size_t size = vec->length - index - 1;
+  for (size_t i = 0; i < size; i++) {
+    memcpy(get_from_vec(vec, index + i), get_from_vec(vec, index + i + 1),
+           vec->type_size);
+  }
+  vec->length -= 1;
+}
 #endif // C_VECTOR
