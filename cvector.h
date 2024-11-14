@@ -7,9 +7,9 @@
   int h1 = 111;
   int h2 = 112;
 
-  push_vector_by_ref(vec, h1);
+  push_vector_by_ref(vec, h1); // copies the memory of the variable to the arena with V_MEMCPY
   push_vector_by_ref(vec, h2);
-  push_vector_by_val(vec, 113, int);
+  push_vector_by_val(vec, 113, int); // assigns the value directly not using V_MEMCPY
   push_vector_by_val(vec, 114, int);
 
   for (size_t i = 0; i < vec.length; i++) {
@@ -75,7 +75,7 @@ void pop_element_from_vec(vector *vec, size_t index);
   vforeach_ref_def(type, name, vector, i)
 #define vforeach_val(type, name, vector, i)                                    \
   vforeach_val_def(type, name, vector, i)
-#define end_foreach }
+#define end_foreach end_foreach_ref
 
 #ifdef C_VECTOR
 
@@ -85,7 +85,8 @@ void pop_element_from_vec(vector *vec, size_t index);
 #define vforeach_val_def(type, name, vector, i)                                \
   for (unsigned long i = 0; i < vector.length; i++) {                          \
     type name = *(type *)get_from_vec(&vector, i);
-
+#define end_foreach_ref }
+                                                     
 #define push_vector_by_val_def(vec, v, type)                                   \
   {                                                                            \
     vec.length++;                                                              \
