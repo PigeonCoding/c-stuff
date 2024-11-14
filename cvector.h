@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-  vector vec = alloc_vector(sizeof(int));
+  vector vec = alloc_vector_sz(int); // == alloc_vector(sizeof(int))
   prealloc_vector(&vec, 4); // allocates (4 * vec.type_size) bits
 
   int h1 = 111;
