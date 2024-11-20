@@ -44,6 +44,11 @@
   V_MEMCPY(&c[0], &a[0], sizeof(a));                                           \
   V_MEMCPY(&c[(array_length(a))], &b[0], sizeof(b));
 #endif // NO_STR
+#define push_to_array(array, element) \
+  for(size_t zzzzz = 0; zzzzz < array_length(array) - 1; zzzzz++) { \
+    array[array_length(array) - zzzzz - 1] =  array[array_length(array) - zzzzz - 2];\
+  } \
+  array[0] = element;
 
 #define aforeach_val(type, name, array, i)                                     \
   for (unsigned long i = 0; i < array_length(array); i++) {                    \
@@ -51,4 +56,6 @@
 #define aforeach_ref(type, name, array, i)                                     \
   for (unsigned long i = 0; i < array_length(array); i++) {                    \
     type *name = &array[i];
+#ifndef end_foreach
 #define end_foreach }
+#endif // end_foreach

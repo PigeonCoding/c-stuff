@@ -46,14 +46,33 @@ void push_char_string(string *s, char c);
 void push_string_whitespace(string *s, char *c);
 void push_string(string *s, char *c);
 char *get_string_c(string *s);
+short int compare_str(const char *s1, const char *s2, size_t size, short int check_sz);
 char *get_char(string *s, size_t index);
 void read_file(string *s, const char *filename);
 void free_string(string *s);
 #define sforeach_ref(name, str, i) sforeach_ref_def(name, str, i)
 #define sforeach_val(name, str, i) sforeach_val_def(name, str, i)
-#define end_foreach end_foreach_ref
+#ifndef end_foreach
+#define end_foreach end_foreach_def
+#endif // end_foreach
 
+// #define C_STRING
 #ifdef C_STRING
+
+short int compare_str(const char *s1, const char *s2, size_t size,
+                      short int check_sz) {
+
+  if ((size > strlen(s1) || size > strlen(s2)) && check_sz) {
+    return -1;
+  }
+
+  for (size_t i = 0; i < size; i++) {
+    if (s1[i] != s2[i]) {
+      return 1;
+    }
+  }
+  return 0;
+}
 
 #define sforeach_ref_def(name, str, i)                                         \
   for (unsigned long i = 0; i < str.length; i++) {                             \
@@ -61,7 +80,7 @@ void free_string(string *s);
 #define sforeach_val_def(name, str, i)                                         \
   for (unsigned long i = 0; i < str.length; i++) {                             \
     char name = *get_char(&str, i);
-#define end_foreach_ref }
+#define end_foreach_def }
 
 string alloc_string() {
   string s;
