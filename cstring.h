@@ -10,7 +10,7 @@
   free_string(&test_string);
 */
 
-#define type_size sizeof(char)
+#define char_size sizeof(char)
 
 #ifndef V_ALLOC
 #include <stdlib.h>
@@ -46,9 +46,13 @@ void push_char_string(string *s, char c);
 void push_string_whitespace(string *s, char *c);
 void push_string(string *s, char *c);
 char *get_string_c(string *s);
-short int compare_str(const char *s1, const char *s2, size_t size, short int check_sz);
+short int compare_str(const char *s1, const char *s2, size_t size,
+                      short int check_sz);
 char *get_char(string *s, size_t index);
 void read_file(string *s, const char *filename);
+void read_file_without_comments(string *s, const char *filename);
+void insert_into_string(string *s, char c, size_t index);
+string copy_string(string *s);
 void free_string(string *s);
 #define sforeach_ref(name, str, i) sforeach_ref_def(name, str, i)
 #define sforeach_val(name, str, i) sforeach_val_def(name, str, i)
@@ -56,7 +60,7 @@ void free_string(string *s);
 #define end_foreach end_foreach_def
 #endif // end_foreach
 
-// #define C_STRING
+#define C_STRING
 #ifdef C_STRING
 
 short int compare_str(const char *s1, const char *s2, size_t size,
@@ -68,10 +72,10 @@ short int compare_str(const char *s1, const char *s2, size_t size,
 
   for (size_t i = 0; i < size; i++) {
     if (s1[i] != s2[i]) {
-      return 1;
+      return 0;
     }
   }
-  return 0;
+  return 1;
 }
 
 #define sforeach_ref_def(name, str, i)                                         \
@@ -84,20 +88,20 @@ short int compare_str(const char *s1, const char *s2, size_t size,
 
 string alloc_string() {
   string s;
-  s.base_pointer = V_MALLOC(type_size * 2);
+  s.base_pointer = V_MALLOC(char_size * 2);
   if (s.base_pointer == NULL) {
     V_FPRINTF(stderr, "buy more ram :)");
     V_EXIT(1);
   }
 
-  s.size = type_size * 2;
+  s.size = char_size * 2;
   s.length = 0;
   return s;
 }
 
 void prealloc_string(string *s, size_t num) {
-  s->base_pointer = V_REALLOC(s->base_pointer, type_size * num * 2);
-  s->size = type_size * num * 2;
+  s->base_pointer = V_REALLOC(s->base_pointer, char_size * num * 2);
+  s->size = char_size * num * 2;
 }
 
 void *get_string_data_pointer(string *a, size_t size) {
@@ -108,18 +112,18 @@ void *get_string_data_pointer(string *a, size_t size) {
     V_EXIT(1);
   }
 
-  if (size < a->size - (a->length - 1) * type_size) {
-    void *out = (a->base_pointer + (a->length - 1) * type_size);
+  if (size < a->size - (a->length - 1) * char_size) {
+    void *out = (a->base_pointer + (a->length - 1) * char_size);
     return out;
   }
   V_FPRINTF(stderr,
             "ERROR: tried to allocate more than the arena had %zu > %zu\n",
-            size, a->size - (a->length - 1) * type_size);
+            size, a->size - (a->length - 1) * char_size);
   V_EXIT(1);
 }
 
 char *get_char(string *s, size_t index) {
-  return (char *)(s->base_pointer + index * type_size);
+  return (char *)(s->base_pointer + index * char_size);
 }
 
 void read_file(string *s, const char *filename) {
@@ -133,15 +137,42 @@ void read_file(string *s, const char *filename) {
   fclose(fptr);
 }
 
-void push_char_string(string *s, char c) {
+void read_file_without_comments(string *s, const char *filename) {
+  FILE *fptr;
+  fptr = fopen(filename, "r");
+
+  char content[1024 * 1024];
+  while (fgets(content, 100, fptr)) {
+    if (!(compare_str(content, "//", 2, 0) || compare_str(content, "#", 1, 0)))
+      push_string(s, content);
+  }
+  fclose(fptr);
+}
+
+void insert_into_string(string *s, char c, size_t index){
   s->length++;
 
-  if (s->length * type_size < s->size) {
+  if (s->length * char_size < s->size) {
     prealloc_string(s, s->length + 1);
   }
 
-  void *g = get_string_data_pointer(s, type_size);
-  V_MEMCPY(g, (void *)(&c), type_size);
+  char* cc = s->base_pointer;
+
+  for (size_t i = s->length ; i > index; i--) {
+    cc[i] = cc[i - 1];
+  }
+  cc[index] = c;
+}
+
+void push_char_string(string *s, char c) {
+  s->length++;
+
+  if (s->length * char_size < s->size) {
+    prealloc_string(s, s->length + 1);
+  }
+
+  void *g = get_string_data_pointer(s, char_size);
+  V_MEMCPY(g, (void *)(&c), char_size);
 }
 
 void push_string_whitespace(string *s, char *c) {
@@ -163,6 +194,16 @@ char *get_string_c(string *s) {
   *(char *)(s->base_pointer + s->length) = '\0';
   return (char *)s->base_pointer;
 }
+
+string copy_string(string *s) {
+  string ss = alloc_string();
+  prealloc_string(&ss, s->length);
+  ss.length = s->length;
+  ss.size = s->size;
+  memcpy(ss.base_pointer, s->base_pointer, s->size);
+  return ss;
+}
+
 
 void free_string(string *s) {
   free(s->base_pointer);

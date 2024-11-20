@@ -77,6 +77,7 @@ void pop_element_from_vec(vector *vec, size_t index);
   vforeach_val_def(type, name, vector, i)
 #define end_foreach end_foreach_ref
 
+// #define C_VECTOR
 #ifdef C_VECTOR
 
 #define vforeach_ref_def(type, name, vector, i)                                \
