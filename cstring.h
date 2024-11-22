@@ -10,7 +10,10 @@
   free_string(&test_string);
 */
 
+#define BUFFER_SIZE 1024 * 1024
 #define char_size sizeof(char)
+#define pseudo_str(s) ((char *)(s).base_pointer)
+#define print_str(s) (int)(s).length, pseudo_str(s)
 
 #ifndef V_ALLOC
 #include <stdlib.h>
@@ -52,8 +55,12 @@ char *get_char(string *s, size_t index);
 void read_file(string *s, const char *filename);
 void read_file_without_comments(string *s, const char *filename);
 void insert_into_string(string *s, char c, size_t index);
+void chop_string(string *s, size_t index);
+void shift_string_left(string *s, size_t length, size_t index);
+void remove_trailing_whhitespace(string *s);
 string copy_string(string *s);
 void free_string(string *s);
+int is_chars_empty(char *s);
 #define sforeach_ref(name, str, i) sforeach_ref_def(name, str, i)
 #define sforeach_val(name, str, i) sforeach_val_def(name, str, i)
 #ifndef end_foreach
@@ -130,9 +137,12 @@ void read_file(string *s, const char *filename) {
   FILE *fptr;
   fptr = fopen(filename, "r");
 
-  char content[1024 * 1024];
+  char content[BUFFER_SIZE];
   while (fgets(content, 100, fptr)) {
-    push_string(s, content);
+    if (!is_chars_empty((char *)s->base_pointer)) {
+      push_string(s, content);
+      remove_trailing_whhitespace(s);
+    }
   }
   fclose(fptr);
 }
@@ -143,25 +153,61 @@ void read_file_without_comments(string *s, const char *filename) {
 
   char content[1024 * 1024];
   while (fgets(content, 100, fptr)) {
-    if (!(compare_str(content, "//", 2, 0) || compare_str(content, "#", 1, 0)))
+    if (!(compare_str(content, "//", 2, 0) ||
+          compare_str(content, "#", 1, 0)) &&
+        !is_chars_empty((char *)s->base_pointer))
       push_string(s, content);
+    // remove_trailing_whhitespace(s);
   }
   fclose(fptr);
 }
 
-void insert_into_string(string *s, char c, size_t index){
+void remove_trailing_whhitespace(string *s) {
+  printf("last is: %c ", *get_char(s, s->length - 1));
+  while (*get_char(s, s->length - 1) == ' ') {
+    printf("last is :(\n");
+    s->length--;
+  }
+}
+
+int is_chars_empty(char *s) {
+  for (size_t i = 0; i < BUFFER_SIZE; i++) {
+    if (s[i] != ' ' || s[i] != '\n') {
+      return 0;
+    }
+  }
+  return 1;
+}
+
+void insert_into_string(string *s, char c, size_t index) {
   s->length++;
 
   if (s->length * char_size < s->size) {
     prealloc_string(s, s->length + 1);
   }
 
-  char* cc = s->base_pointer;
+  char *cc = s->base_pointer;
 
-  for (size_t i = s->length ; i > index; i--) {
+  for (size_t i = s->length; i > index; i--) {
     cc[i] = cc[i - 1];
   }
   cc[index] = c;
+}
+
+void chop_string(string *s, size_t index) {
+  if (index < 1) {
+    return;
+  }
+  for (size_t y = index; y < s->length; y++) {
+    pseudo_str(*s)[y] = pseudo_str(*s)[y + 1];
+  }
+  s->length -= 1;
+}
+
+void shift_string_left(string *s, size_t length, size_t index) {
+  for (size_t i = 0; i < length; i++) {
+    chop_string(s, index - i);
+  }
 }
 
 void push_char_string(string *s, char c) {
@@ -203,7 +249,6 @@ string copy_string(string *s) {
   memcpy(ss.base_pointer, s->base_pointer, s->size);
   return ss;
 }
-
 
 void free_string(string *s) {
   free(s->base_pointer);
