@@ -32,7 +32,8 @@
     fprintf(stderr, __VA_ARGS__);                                              \
     break;                                                                     \
   }
-#endif
+#define eprintfn(...) eprintf(__VA_ARGS__); V_FPRINTF(stdout, "\n");
+#endif // V_FPRINTF
 
 #define array_length(a) sizeof(a) / sizeof(a[0])
 #define array_nsize(a, b) array_length(a) + array_length(b)
