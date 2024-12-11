@@ -10,10 +10,10 @@
   free_string(&test_string);
 */
 
-#define BUFFER_SIZE 1024 * 1024
+#define STRING_BUFFER_SIZE 1024 * 1024
 #define char_size sizeof(char)
 #define pseudo_str(s) ((char *)(s).base_pointer)
-#define print_str(s) (int)(s).length, pseudo_str(s)
+#define print_str(s) (int)((s).length), pseudo_str(s)
 
 #ifndef V_ALLOC
 #include <stdlib.h>
@@ -42,6 +42,11 @@ typedef struct {
   size_t length;
 } string;
 
+typedef struct {
+  void *base_pointer;
+  size_t length;
+} string_view;
+
 string alloc_string();
 void prealloc_string(string *s, size_t num);
 void *get_string_data_pointer(string *a, size_t size);
@@ -66,6 +71,9 @@ int is_chars_empty(char *s);
 #ifndef end_foreach
 #define end_foreach end_foreach_def
 #endif // end_foreach
+#ifndef str_fmt
+#define str_fmt "%.*s"
+#endif
 
 #define C_STRING
 #ifdef C_STRING
@@ -137,7 +145,7 @@ void read_file(string *s, const char *filename) {
   FILE *fptr;
   fptr = fopen(filename, "r");
 
-  char content[BUFFER_SIZE];
+  char content[STRING_BUFFER_SIZE];
   while (fgets(content, 100, fptr)) {
     if (!is_chars_empty((char *)s->base_pointer)) {
       push_string(s, content);
@@ -171,7 +179,7 @@ void remove_trailing_whhitespace(string *s) {
 }
 
 int is_chars_empty(char *s) {
-  for (size_t i = 0; i < BUFFER_SIZE; i++) {
+  for (size_t i = 0; i < STRING_BUFFER_SIZE; i++) {
     if (s[i] != ' ' || s[i] != '\n') {
       return 0;
     }
@@ -186,7 +194,7 @@ void insert_into_string(string *s, char c, size_t index) {
     prealloc_string(s, s->length + 1);
   }
 
-  char *cc = s->base_pointer;
+  char *cc = (char *)s->base_pointer;
 
   for (size_t i = s->length; i > index; i--) {
     cc[i] = cc[i - 1];

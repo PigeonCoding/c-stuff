@@ -1,2 +1,2 @@
 Diagnostics:
-  Suppress: '*'
+  Suppress: 'typecheck_pointer_arith_void_type'
