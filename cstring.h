@@ -53,6 +53,7 @@ void *get_string_data_pointer(string *a, size_t size);
 void push_char_string(string *s, char c);
 void push_string_whitespace(string *s, char *c);
 void push_string(string *s, char *c);
+void push_string_view(string *s, string_view s2);
 char *get_string_c(string *s);
 short int compare_str(const char *s1, const char *s2, size_t size,
                       short int check_sz);
@@ -241,6 +242,12 @@ void push_string(string *s, char *c) {
   char *h;
   for (h = (char *)c; *h; h++) {
     push_char_string(s, *h);
+  }
+}
+
+void push_string_view(string *s, string_view s2) {
+  for (size_t i = 0; i < s2.length; i++) {
+    push_char_string(s, pseudo_str(s2)[i]);
   }
 }
 

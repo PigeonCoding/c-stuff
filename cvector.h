@@ -33,6 +33,7 @@
 }
 */
 
+#include <cstddef>
 #ifndef V_ALLOC
 #include <stdlib.h>
 #define V_MALLOC malloc
@@ -69,13 +70,23 @@ void *get_from_vec(vector *vec, size_t index);
 void reset_vector(vector *vec);
 void free_vector(vector *vec);
 void pop_element_from_vec(vector *vec, size_t index);
+#ifndef push_vector_by_val
 #define push_vector_by_val(vec, v, type) push_vector_by_val_def(vec, v, type)
+#endif
+#ifndef push_vector_by_ref
 #define push_vector_by_ref(vec, v) push_vector_by_ref_def(vec, v)
+#endif
+#ifndef vforeach_ref
 #define vforeach_ref(type, name, vector, i)                                    \
   vforeach_ref_def(type, name, vector, i)
+#endif
+#ifndef vforeach_val
 #define vforeach_val(type, name, vector, i)                                    \
   vforeach_val_def(type, name, vector, i)
+#endif
+#ifndef end_foreach
 #define end_foreach end_foreach_ref
+#endif
 
 // #define C_VECTOR
 #ifdef C_VECTOR
