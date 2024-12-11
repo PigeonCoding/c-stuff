@@ -20,19 +20,22 @@
     V_FPRINTF(stdout, __VA_ARGS__);                                            \
     break;                                                                     \
   case P_INFO:                                                                 \
-    fprintf(stdout, "[INFO]: ");                                               \
+    V_FPRINTF(stdout, "[INFO]: ");                                             \
     V_FPRINTF(stdout, __VA_ARGS__);                                            \
     break;                                                                     \
   case P_WARN:                                                                 \
-    fprintf(stdout, "[WARNING]: ");                                            \
+    V_FPRINTF(stdout, "[WARNING]: ");                                          \
     V_FPRINTF(stdout, __VA_ARGS__);                                            \
     break;                                                                     \
   case P_ERR:                                                                  \
-    fprintf(stderr, "[ERROR]: ");                                              \
-    fprintf(stderr, __VA_ARGS__);                                              \
+    V_FPRINTF(stderr, "[ERROR]: ");                                            \
+    V_FPRINTF(stderr, __VA_ARGS__);                                            \
     break;                                                                     \
   }
-#define eprintfn(...) eprintf(__VA_ARGS__); V_FPRINTF(stdout, "\n");
+
+#define eprintfn(...)                                                          \
+  eprintf(__VA_ARGS__);                                                        \
+  V_FPRINTF(stdout, "\n");
 #endif // V_FPRINTF
 
 #define array_length(a) sizeof(a) / sizeof(a[0])
@@ -45,10 +48,11 @@
   V_MEMCPY(&c[0], &a[0], sizeof(a));                                           \
   V_MEMCPY(&c[(array_length(a))], &b[0], sizeof(b));
 #endif // NO_STR
-#define push_to_array(array, element) \
-  for(size_t zzzzz = 0; zzzzz < array_length(array) - 1; zzzzz++) { \
-    array[array_length(array) - zzzzz - 1] =  array[array_length(array) - zzzzz - 2];\
-  } \
+#define push_to_array(array, element)                                          \
+  for (size_t zzzzz = 0; zzzzz < array_length(array) - 1; zzzzz++) {           \
+    array[array_length(array) - zzzzz - 1] =                                   \
+        array[array_length(array) - zzzzz - 2];                                \
+  }                                                                            \
   array[0] = element;
 
 #define aforeach_val(type, name, array, i)                                     \
