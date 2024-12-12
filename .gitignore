@@ -2,7 +2,6 @@
 *.d
 
 main
-.clangd
 
 # Object files
 *.o
@@ -56,3 +55,5 @@ dkms.conf
 http-test.c
 pipe.txt
 http-test
+parr-req.sh
+build/

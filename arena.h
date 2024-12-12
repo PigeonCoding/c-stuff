@@ -1,6 +1,4 @@
 #pragma once
-#include <stdio.h>
-#include <stdlib.h>
 
 /*
   arena r = alloc_arena(sizeof(int) * 3);
@@ -20,6 +18,25 @@
 
   free_arena(&r);
 */
+#ifndef NO_STDLIB
+
+#ifndef V_EXIT
+#include <stdlib.h>
+#define V_EXIT(x) exit(x)
+#endif // V_EXIT
+
+#ifndef V_ALLOC
+#include <stdlib.h>
+#define V_MALLOC malloc
+#define V_REALLOC realloc
+#endif // V_ALLOC
+
+#endif // NO_STDLIB
+
+#ifndef V_FPRINTF
+#include <stdio.h>
+#define V_FPRINTF fprintf
+#endif
 
 typedef struct {
   size_t current_offset;
@@ -27,11 +44,17 @@ typedef struct {
   size_t size;
 } arena;
 
+arena alloc_arena(size_t size);
+void *get_data_pointer(arena *a, size_t size);
+void reset_arena(arena* a);
+void free_arena(arena *a);
+
+#ifdef C_ARENA
 arena alloc_arena(size_t size) {
   arena r;
   r.base_pointer = malloc(size);
   if (r.base_pointer == NULL) {
-    printf("buy more ram :)");
+    V_FPRINTF(stderr, "buy more ram :)");
     exit(1);
   }
 
@@ -42,7 +65,7 @@ arena alloc_arena(size_t size) {
 
 void *get_data_pointer(arena *a, size_t size) {
   if (a->base_pointer == NULL) {
-    fprintf(stderr, "base pointer is null either it was not initialized or it has been freed :)\n");
+    V_FPRINTF(stderr, "base pointer is null either it was not initialized or it has been freed :)\n");
     exit(1);
   }
 
@@ -51,7 +74,7 @@ void *get_data_pointer(arena *a, size_t size) {
     a->current_offset += size;
     return out;
   }
-  printf("ERROR: tried to allocate more than the arena had %zu > %zu\n", size , a->size - a->current_offset);
+  V_FPRINTF(stderr, "ERROR: tried to allocate more than the arena had %zu > %zu\n", size , a->size - a->current_offset);
   exit(1);
 }
 
@@ -66,3 +89,4 @@ void free_arena(arena *a) {
   a->current_offset = 0;
   a->size = 0;
 }
+#endif // C_ARENA
