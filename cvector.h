@@ -1,5 +1,7 @@
 #pragma once
 
+// version 0.5
+
 /*
   vector vec = alloc_vector_sz(int); // == alloc_vector(sizeof(int))
   prealloc_vector(&vec, 4); // allocates (4 * vec.type_size) in arena
@@ -33,7 +35,6 @@
 }
 */
 
-#include <cstddef>
 #ifndef V_ALLOC
 #include <stdlib.h>
 #define V_MALLOC malloc

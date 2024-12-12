@@ -1,9 +1,9 @@
-main: main.c
-	clang ./main.c -g -Wall -Wextra -Wswitch-enum  -o main
+main-build: main.c
+	clang ./main.c -g -Wall -Wextra -Wswitch-enum -o build/main
 main-run: main
-	./main
+	./build/main
 
-http: http-test.c
-	clang ./http-test.c -g -Wall -Wextra -Wswitch-enum  -o http-test
+http-build: http-test.c
+	clang ./http-test.c -g -Wall -Wextra -Wswitch-enum -o build/http-test
 http-run: http
-	./http-test
+	./build/http-test

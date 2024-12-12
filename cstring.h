@@ -1,5 +1,7 @@
 #pragma once
 
+// version 0.4
+
 /*
   string test_string = alloc_string();
 
@@ -51,8 +53,8 @@ string alloc_string();
 void prealloc_string(string *s, size_t num);
 void *get_string_data_pointer(string *a, size_t size);
 void push_char_string(string *s, char c);
-void push_string_whitespace(string *s, char *c);
-void push_string(string *s, char *c);
+void push_string_whitespace(string *s, const char *c);
+void push_string(string *s, const char *c);
 void push_string_view(string *s, string_view s2);
 char *get_string_c(string *s);
 short int compare_str(const char *s1, const char *s2, size_t size,
@@ -76,7 +78,7 @@ int is_chars_empty(char *s);
 #define str_fmt "%.*s"
 #endif
 
-#define C_STRING
+// #define C_STRING
 #ifdef C_STRING
 
 short int compare_str(const char *s1, const char *s2, size_t size,
@@ -230,7 +232,7 @@ void push_char_string(string *s, char c) {
   V_MEMCPY(g, (void *)(&c), char_size);
 }
 
-void push_string_whitespace(string *s, char *c) {
+void push_string_whitespace(string *s, const char *c) {
   char *h;
   for (h = (char *)c; *h; h++) {
     push_char_string(s, *h);
@@ -238,7 +240,7 @@ void push_string_whitespace(string *s, char *c) {
   push_char_string(s, ' ');
 }
 
-void push_string(string *s, char *c) {
+void push_string(string *s, const char *c) {
   char *h;
   for (h = (char *)c; *h; h++) {
     push_char_string(s, *h);
