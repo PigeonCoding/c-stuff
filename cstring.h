@@ -68,6 +68,7 @@ void shift_string_left(string *s, size_t length, size_t index);
 void remove_trailing_whhitespace(string *s);
 string copy_string(string *s);
 void free_string(string *s);
+void reset_string(string *s);
 int is_chars_empty(char *s);
 #define sforeach_ref(name, str, i) sforeach_ref_def(name, str, i)
 #define sforeach_val(name, str, i) sforeach_val_def(name, str, i)
@@ -265,6 +266,12 @@ string copy_string(string *s) {
   ss.size = s->size;
   memcpy(ss.base_pointer, s->base_pointer, s->size);
   return ss;
+}
+
+void reset_string(string *s) {
+  s->base_pointer = realloc(s->base_pointer, 1);
+  s->size = 1;
+  s->length = 0;
 }
 
 void free_string(string *s) {
