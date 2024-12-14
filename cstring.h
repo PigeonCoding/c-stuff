@@ -70,15 +70,27 @@ string copy_string(string *s);
 void free_string(string *s);
 void reset_string(string *s);
 int is_chars_empty(char *s);
-#define sforeach_ref(name, str, i) sforeach_ref_def(name, str, i)
-#define sforeach_val(name, str, i) sforeach_val_def(name, str, i)
+#ifndef sforeach_ref
+#define sforeach_ref(name, str, i)                                             \
+  for (unsigned long i = 0; i < str.length; i++) {                             \
+    char *name = get_char(&str, i);
+#endif // sforeach_ref
+#ifndef sforeach_val
+#define sforeach_val(name, str, i)                                             \
+  for (unsigned long i = 0; i < str.length; i++) {                             \
+    char name = *get_char(&str, i);
+#endif // sforeach_val
 #ifndef end_foreach
-#define end_foreach end_foreach_def
+#define end_foreach }
 #endif // end_foreach
 #ifndef str_fmt
 #define str_fmt "%.*s"
 #endif
-
+#ifndef str_cmp
+#define str_cmp(str, other)                                                    \
+  strncmp(pseudo_str(str), other,                                              \
+          (str).length) == 0 // compares string/string_view to const char*
+#endif
 // #define C_STRING
 #ifdef C_STRING
 
@@ -96,14 +108,6 @@ short int compare_str(const char *s1, const char *s2, size_t size,
   }
   return 1;
 }
-
-#define sforeach_ref_def(name, str, i)                                         \
-  for (unsigned long i = 0; i < str.length; i++) {                             \
-    char *name = get_char(&str, i);
-#define sforeach_val_def(name, str, i)                                         \
-  for (unsigned long i = 0; i < str.length; i++) {                             \
-    char name = *get_char(&str, i);
-#define end_foreach_def }
 
 string alloc_string() {
   string s;
@@ -175,9 +179,7 @@ void read_file_without_comments(string *s, const char *filename) {
 }
 
 void remove_trailing_whhitespace(string *s) {
-  printf("last is: %c ", *get_char(s, s->length - 1));
   while (*get_char(s, s->length - 1) == ' ') {
-    printf("last is :(\n");
     s->length--;
   }
 }
@@ -270,7 +272,8 @@ string copy_string(string *s) {
 
 void reset_string(string *s) {
   s->base_pointer = realloc(s->base_pointer, 1);
-  s->size = 1;
+  *(int *)(s->base_pointer) = 0;
+  s->size = char_size * 2;
   s->length = 0;
 }
 
