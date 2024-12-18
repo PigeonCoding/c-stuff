@@ -58,3 +58,5 @@ http-test
 parr-req.sh
 build/
 test.txt
+temp.txt
+./main.c
