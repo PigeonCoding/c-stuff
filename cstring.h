@@ -88,8 +88,9 @@ int is_chars_empty(char *s);
 #endif
 #ifndef str_cmp
 #define str_cmp(str, other)                                                    \
-  strncmp(pseudo_str(str), other,                                              \
-          (str).length) == 0 // compares string/string_view to const char*
+  (str).length >= strlen(other) &&                                             \
+      strncmp(pseudo_str(str), other, (str).length) ==                         \
+          0 // compares string/string_view to const char*
 #endif
 // #define C_STRING
 #ifdef C_STRING
