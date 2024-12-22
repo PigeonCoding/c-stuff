@@ -1,22 +1,17 @@
 #pragma once
-// #include "nice.h"
 #include <arpa/inet.h>
-#include <stdio.h>
-// #include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
+#include <stdio.h>
+#include <string.h>
 #define C_STRING
-#include "cstring.h"
+#include "c_string.h"
 
-#define BUFFER_SIZE 1024
+// version 0.1
+
+#define BUFFER_SIZE 1024*2
 
 #ifndef THREAD_NUM_SERVER
-#define THREAD_NUM_SERVER 16
-#endif
-
-#ifndef V_FPRINTF
-#include <stdio.h>
-#define V_FPRINTF fprintf
+#define THREAD_NUM_SERVER 8
 #endif
 
 #ifdef C_SERVER_MULTI

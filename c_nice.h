@@ -1,5 +1,7 @@
 #pragma once
 
+// version 0.1
+
 #ifndef V_MEMCPY
 #include <string.h>
 #define V_MEMCPY memcpy
@@ -24,11 +26,11 @@
     V_FPRINTF(stdout, __VA_ARGS__);                                            \
     break;                                                                     \
   case P_WARN:                                                                 \
-    V_FPRINTF(stdout, "[WARNING]: ");                                          \
+    V_FPRINTF(stdout, "[WARN]: ");                                             \
     V_FPRINTF(stdout, __VA_ARGS__);                                            \
     break;                                                                     \
   case P_ERR:                                                                  \
-    V_FPRINTF(stderr, "[ERROR]: ");                                            \
+    V_FPRINTF(stderr, "[ERR]: ");                                              \
     V_FPRINTF(stderr, __VA_ARGS__);                                            \
     break;                                                                     \
   }

@@ -9,9 +9,12 @@
   int h1 = 111;
   int h2 = 112;
 
-  push_vector_by_ref(vec, h1); // copies the memory of the variable to the arena with V_MEMCPY
+  // copies the memory of the variable to the arena with V_MEMCPY
+  push_vector_by_ref(vec, h1); 
   push_vector_by_ref(vec, h2);
-  push_vector_by_val(vec, 113, int); // assigns the value directly not using V_MEMCPY
+  
+  `// assigns the value directly not using V_MEMCPY
+  push_vector_by_val(vec, 113, int); 
   push_vector_by_val(vec, 114, int);
 
   for (size_t i = 0; i < vec.length; i++) {
@@ -66,7 +69,6 @@ typedef struct {
 vector alloc_vector(size_t type_siz);
 #define alloc_vector_sz(sz) alloc_vector(sizeof(sz))
 void prealloc_vector(vector *vec, size_t num);
-void *get_vector_data_pointer(vector *a, size_t size);
 void *get_from_vec(vector *vec, size_t index);
 void reset_vector(vector *vec);
 void free_vector(vector *vec);
@@ -91,6 +93,7 @@ void pop_element_from_vec(vector *vec, size_t index);
 
 // #define C_VECTOR
 #ifdef C_VECTOR
+void *internal_get_data-pointer(vector *a, size_t size);
 
 #define vforeach_ref_def(type, name, vector, i)                                \
   for (unsigned long i = 0; i < vector.length; i++) {                          \
@@ -106,7 +109,7 @@ void pop_element_from_vec(vector *vec, size_t index);
     if (vec.length * vec.type_size < vec.size) {                               \
       prealloc_vector(&vec, vec.length * 2 + 1);                               \
     }                                                                          \
-    type *g = (type *)get_vector_data_pointer(&vec, vec.type_size);            \
+    type *g = (type *)internal_get_data-pointer(&vec, vec.type_size);            \
     *g = v;                                                                    \
   }
 
@@ -116,11 +119,11 @@ void pop_element_from_vec(vector *vec, size_t index);
     if (vec.length * vec.type_size < vec.size) {                               \
       prealloc_vector(&vec, vec.length * 2 + 1);                               \
     }                                                                          \
-    void *g = get_vector_data_pointer(&vec, vec.type_size);                    \
+    void *g = internal_get_data-pointer(&vec, vec.type_size);                    \
     memcpy(g, &v, vec.type_size);                                              \
   }
 
-void *get_vector_data_pointer(vector *a, size_t size) {
+void *internal_get_data-pointer(vector *a, size_t size) {
   if (a->base_pointer == NULL) {
     V_FPRINTF(stderr,
               "base pointer is null either it was not initialized or it "

@@ -12,12 +12,25 @@
   free_string(&test_string);
 */
 
+#ifndef STRING_BUFFER_SIZE
 #define STRING_BUFFER_SIZE 1024 * 1024
+#endif
+#ifndef char_size
 #define char_size sizeof(char)
+#endif
+#ifndef pseudo_str
 #define pseudo_str(s) ((char *)(s).base_pointer)
+#endif
+#ifndef print_str
 #define print_str(s) (int)((s).length), pseudo_str(s)
+#endif
+#ifndef string_to_view
+#define string_to_view(s)                                                      \
+  (string_view) { .base_pointer = s.base_pointer, .length = s.length }
+#endif
 
-#ifndef V_ALLOC
+
+#ifndef V_CUSTOM_ALLOC
 #include <stdlib.h>
 #define V_MALLOC malloc
 #define V_REALLOC realloc
@@ -65,7 +78,7 @@ void read_file_without_comments(string *s, const char *filename);
 void insert_into_string(string *s, char c, size_t index);
 void chop_string(string *s, size_t index);
 void shift_string_left(string *s, size_t length, size_t index);
-void remove_trailing_whhitespace(string *s);
+void remove_trailing_whitespace(string *s);
 string copy_string(string *s);
 void free_string(string *s);
 void reset_string(string *s);
@@ -91,7 +104,9 @@ int is_chars_empty(char *s);
   (str).length >= strlen(other) &&                                             \
       strncmp(pseudo_str(str), other, (str).length) ==                         \
           0 // compares string/string_view to const char*
+
 #endif
+
 // #define C_STRING
 #ifdef C_STRING
 
@@ -153,12 +168,16 @@ char *get_char(string *s, size_t index) {
 void read_file(string *s, const char *filename) {
   FILE *fptr;
   fptr = fopen(filename, "r");
+  if (fptr == NULL) {
+    V_FPRINTF(stderr, "[ERROR]: cannot read file %s\n", filename);
+    return;
+  }
 
   char content[STRING_BUFFER_SIZE];
   while (fgets(content, 100, fptr)) {
     if (!is_chars_empty((char *)s->base_pointer)) {
       push_string(s, content);
-      remove_trailing_whhitespace(s);
+      remove_trailing_whitespace(s);
     }
   }
   fclose(fptr);
@@ -167,6 +186,10 @@ void read_file(string *s, const char *filename) {
 void read_file_without_comments(string *s, const char *filename) {
   FILE *fptr;
   fptr = fopen(filename, "r");
+  if (fptr == NULL) {
+    V_FPRINTF(stderr, "[ERROR]: cannot read file %s\n", filename);
+    return;
+  }
 
   char content[1024 * 1024];
   while (fgets(content, 100, fptr)) {
@@ -174,12 +197,12 @@ void read_file_without_comments(string *s, const char *filename) {
           compare_str(content, "#", 1, 0)) &&
         !is_chars_empty((char *)s->base_pointer))
       push_string(s, content);
-    // remove_trailing_whhitespace(s);
+    // remove_trailing_whitespace(s);
   }
   fclose(fptr);
 }
 
-void remove_trailing_whhitespace(string *s) {
+void remove_trailing_whitespace(string *s) {
   while (*get_char(s, s->length - 1) == ' ') {
     s->length--;
   }
