@@ -133,21 +133,21 @@ void gen_res(string *s, int code) {
   switch (code) {
   default:
   case c200_text:
-    push_string(s, "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n");
+    push_char_ptr(s, "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n");
     break;
   case c200_html:
-    push_string(
+    push_char_ptr(
         s, "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n");
     break;
   case c404:
-    push_string(s, "HTTP/1.1 404 Not Found\r\nContent-Type: "
+    push_char_ptr(s, "HTTP/1.1 404 Not Found\r\nContent-Type: "
                    "text/html\r\n\r\n<html><head><title>404 Not "
                    "Found</title></head><body><h1>404 Not Found</h1><p>The "
                    "requested URL was "
                    "not found on this server.</p></body></html>");
     break;
   case c503:
-    push_string(
+    push_char_ptr(
         s,
         "HTTP/1.1 503 Service Unavailable\r\nServer: Custom\r\nContent-Type: "
         "text/html; charset=UTF-8\r\nRetry-After: 300\r\n<html> <head> "
@@ -172,7 +172,7 @@ void *income_single(int client_socket_income) {
   string buff_string = alloc_string();
   string res = alloc_string();
   recv(client_socket_income, buffer, sizeof(buffer), 0);
-  push_string(&buff_string, &(buffer[0]));
+  push_char_ptr(&buff_string, &(buffer[0]));
 
   if (get_path(buff_string).length == 0 || get_ip(buff_string).length == 0) {
     V_FPRINTF(stdout, "[WARN]: error with req: " str_fmt "\n",
@@ -182,7 +182,7 @@ void *income_single(int client_socket_income) {
 
   handle_paths_single(&buffer[0], &buff_string, &res);
 
-  push_char_string(&res, '\n');
+  push_char_to_string(&res, '\n');
 
   send(client_socket_income, pseudo_str(res), res.length, 0);
   close(client_socket_income);
@@ -193,7 +193,7 @@ void *income_single(int client_socket_income) {
 
 // void handle_paths_single(char *buffer, string *buff_string, string *res) {
 //   gen_res(res, c200_text);
-//   push_string(res, "Hello, World");
+//   push_char_ptr(res, "Hello, World");
 // }
 
 // int main(void) {

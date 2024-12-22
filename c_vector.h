@@ -10,11 +10,11 @@
   int h2 = 112;
 
   // copies the memory of the variable to the arena with V_MEMCPY
-  push_vector_by_ref(vec, h1); 
+  push_vector_by_ref(vec, h1);
   push_vector_by_ref(vec, h2);
-  
+
   `// assigns the value directly not using V_MEMCPY
-  push_vector_by_val(vec, 113, int); 
+  push_vector_by_val(vec, 113, int);
   push_vector_by_val(vec, 114, int);
 
   for (size_t i = 0; i < vec.length; i++) {
@@ -25,7 +25,7 @@
   printf("--------------\n");
   pop_element_from_vec(&vec, 1);
 
-  vforeach_val(int, el, vec, i) 
+  vforeach_val(int, el, vec, i)
     printf("value: %i\n", el);
   end_foreach
 
@@ -42,6 +42,7 @@
 #include <stdlib.h>
 #define V_MALLOC malloc
 #define V_REALLOC realloc
+#define V_FREE free
 #endif
 
 #ifndef V_EXIT
@@ -93,7 +94,7 @@ void pop_element_from_vec(vector *vec, size_t index);
 
 // #define C_VECTOR
 #ifdef C_VECTOR
-void *internal_get_data-pointer(vector *a, size_t size);
+void *internal_get_data_pointer(vector *a, size_t size);
 
 #define vforeach_ref_def(type, name, vector, i)                                \
   for (unsigned long i = 0; i < vector.length; i++) {                          \
@@ -102,14 +103,14 @@ void *internal_get_data-pointer(vector *a, size_t size);
   for (unsigned long i = 0; i < vector.length; i++) {                          \
     type name = *(type *)get_from_vec(&vector, i);
 #define end_foreach_ref }
-                                                     
+
 #define push_vector_by_val_def(vec, v, type)                                   \
   {                                                                            \
     vec.length++;                                                              \
     if (vec.length * vec.type_size < vec.size) {                               \
       prealloc_vector(&vec, vec.length * 2 + 1);                               \
     }                                                                          \
-    type *g = (type *)internal_get_data-pointer(&vec, vec.type_size);            \
+    type *g = (type *)internal_get_data_pointer(&vec, vec.type_size);          \
     *g = v;                                                                    \
   }
 
@@ -119,16 +120,16 @@ void *internal_get_data-pointer(vector *a, size_t size);
     if (vec.length * vec.type_size < vec.size) {                               \
       prealloc_vector(&vec, vec.length * 2 + 1);                               \
     }                                                                          \
-    void *g = internal_get_data-pointer(&vec, vec.type_size);                    \
-    memcpy(g, &v, vec.type_size);                                              \
+    void *g = internal_get_data_pointer(&vec, vec.type_size);                  \
+    V_MEMCPY(g, &v, vec.type_size);                                            \
   }
 
-void *internal_get_data-pointer(vector *a, size_t size) {
+void *internal_get_data_pointer(vector *a, size_t size) {
   if (a->base_pointer == NULL) {
     V_FPRINTF(stderr,
               "base pointer is null either it was not initialized or it "
               "has been freed:)\n ");
-    exit(1);
+    V_EXIT(1);
   }
 
   if (size < a->size - (a->length - 1) * a->type_size) {
@@ -138,7 +139,7 @@ void *internal_get_data-pointer(vector *a, size_t size) {
   V_FPRINTF(stderr,
             "ERROR: tried to allocate more than the arena had %zu > %zu\n",
             size, a->size - (a->length - 1) * a->type_size);
-  exit(1);
+  V_EXIT(1);
 }
 
 vector alloc_vector(size_t type_siz) {
@@ -147,7 +148,7 @@ vector alloc_vector(size_t type_siz) {
   vec.base_pointer = V_MALLOC(type_siz * 2);
   if (vec.base_pointer == NULL) {
     V_FPRINTF(stderr, "buy more ram :)");
-    exit(1);
+    V_EXIT(1);
   }
 
   vec.size = type_siz * 2;
@@ -158,25 +159,28 @@ vector alloc_vector(size_t type_siz) {
 }
 
 void prealloc_vector(vector *vec, size_t num) {
-  vec->base_pointer = realloc(vec->base_pointer, vec->type_size * num * 2);
-  vec->size = vec->type_size * num * 2;
+  vec->base_pointer =
+      V_REALLOC(vec->base_pointer, vec->type_size * (vec->size + num * 2));
+  vec->size = vec->size + num * 2;
 }
 
 void *get_from_vec(vector *vec, size_t index) {
   if (index >= vec->length) {
     V_FPRINTF(stderr, "ERROR: index out of range\n");
-    exit(1);
+    V_EXIT(1);
   }
   return vec->base_pointer + vec->type_size * index;
 }
 
 void reset_vector(vector *vec) {
-  *(int *)(vec->base_pointer) = 0;
+  V_FREE(vec->base_pointer);
+  vec->base_pointer = V_MALLOC(vec->type_size * 2);
+  vec->size = vec->type_size * 2;
   vec->length = 0;
 }
 
 void free_vector(vector *vec) {
-  free(vec->base_pointer);
+  V_FREE(vec->base_pointer);
   vec->base_pointer = NULL;
   vec->size = 0;
   vec->length = 0;
@@ -185,8 +189,9 @@ void free_vector(vector *vec) {
 
 void pop_element_from_vec(vector *vec, size_t index) {
   if (index + 1 > vec->length) {
-    V_FPRINTF(stderr, "[ERROR]: index out of range %zu\n", index + 1);
-    exit(1);
+    V_FPRINTF(stderr, "[ERROR]: index out of range %zu > %zu\n", index,
+              vec->length - 1);
+    V_EXIT(1);
   }
 
   if (index == vec->length - 1) {
@@ -197,8 +202,8 @@ void pop_element_from_vec(vector *vec, size_t index) {
   // TODO: use memcpy to directly shift memory (was buggy for some reason)
   size_t size = vec->length - index - 1;
   for (size_t i = 0; i < size; i++) {
-    memcpy(get_from_vec(vec, index + i), get_from_vec(vec, index + i + 1),
-           vec->type_size);
+    V_MEMCPY(get_from_vec(vec, index + i), get_from_vec(vec, index + i + 1),
+             vec->type_size);
   }
   vec->length -= 1;
 }

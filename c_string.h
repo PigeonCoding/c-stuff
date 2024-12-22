@@ -5,7 +5,7 @@
 /*
   string test_string = alloc_string();
 
-  push_string(&test_string, "Hello World!");
+  push_char_ptr(&test_string, "Hello World!");
 
   printf("%s\n", get_string_c(&test_string));
 
@@ -34,6 +34,7 @@
 #include <stdlib.h>
 #define V_MALLOC malloc
 #define V_REALLOC realloc
+#define V_FREE free
 #endif
 
 #ifndef V_EXIT
@@ -65,9 +66,9 @@ typedef struct {
 string alloc_string();
 void prealloc_string(string *s, size_t num);
 void *get_string_data_pointer(string *a, size_t size);
-void push_char_string(string *s, char c);
+void push_char_to_string(string *s, char c);
 void push_string_whitespace(string *s, const char *c);
-void push_string(string *s, const char *c);
+void push_char_ptr(string *s, const char *c);
 void push_string_view(string *s, string_view s2);
 char *get_string_c(string *s);
 short int compare_str(const char *s1, const char *s2, size_t size,
@@ -139,8 +140,8 @@ string alloc_string() {
 }
 
 void prealloc_string(string *s, size_t num) {
-  s->base_pointer = V_REALLOC(s->base_pointer, char_size * num * 2);
-  s->size = char_size * num * 2;
+  s->base_pointer = V_REALLOC(s->base_pointer, char_size * (s->size + num * 2));
+  s->size = char_size * (s->size + num * 2);
 }
 
 void *get_string_data_pointer(string *a, size_t size) {
@@ -176,7 +177,7 @@ void read_file(string *s, const char *filename) {
   char content[STRING_BUFFER_SIZE];
   while (fgets(content, 100, fptr)) {
     if (!is_chars_empty((char *)s->base_pointer)) {
-      push_string(s, content);
+      push_char_ptr(s, content);
       remove_trailing_whitespace(s);
     }
   }
@@ -196,7 +197,7 @@ void read_file_without_comments(string *s, const char *filename) {
     if (!(compare_str(content, "//", 2, 0) ||
           compare_str(content, "#", 1, 0)) &&
         !is_chars_empty((char *)s->base_pointer))
-      push_string(s, content);
+      push_char_ptr(s, content);
     // remove_trailing_whitespace(s);
   }
   fclose(fptr);
@@ -221,7 +222,7 @@ void insert_into_string(string *s, char c, size_t index) {
   s->length++;
 
   if (s->length * char_size < s->size) {
-    prealloc_string(s, s->length + 1);
+    prealloc_string(s, 2);
   }
 
   char *cc = (char *)s->base_pointer;
@@ -248,11 +249,11 @@ void shift_string_left(string *s, size_t length, size_t index) {
   }
 }
 
-void push_char_string(string *s, char c) {
+void push_char_to_string(string *s, char c) {
   s->length++;
 
   if (s->length * char_size < s->size) {
-    prealloc_string(s, s->length + 1);
+    prealloc_string(s, 2);
   }
 
   void *g = get_string_data_pointer(s, char_size);
@@ -262,26 +263,26 @@ void push_char_string(string *s, char c) {
 void push_string_whitespace(string *s, const char *c) {
   char *h;
   for (h = (char *)c; *h; h++) {
-    push_char_string(s, *h);
+    push_char_to_string(s, *h);
   }
-  push_char_string(s, ' ');
+  push_char_to_string(s, ' ');
 }
 
-void push_string(string *s, const char *c) {
+void push_char_ptr(string *s, const char *c) {
   char *h;
   for (h = (char *)c; *h; h++) {
-    push_char_string(s, *h);
+    push_char_to_string(s, *h);
   }
 }
 
 void push_string_view(string *s, string_view s2) {
   for (size_t i = 0; i < s2.length; i++) {
-    push_char_string(s, pseudo_str(s2)[i]);
+    push_char_to_string(s, pseudo_str(s2)[i]);
   }
 }
 
 char *get_string_c(string *s) {
-  *(char *)(s->base_pointer + s->length) = '\0';
+  push_char_to_string(s, '\0');
   return (char *)s->base_pointer;
 }
 
@@ -290,19 +291,19 @@ string copy_string(string *s) {
   prealloc_string(&ss, s->length);
   ss.length = s->length;
   ss.size = s->size;
-  memcpy(ss.base_pointer, s->base_pointer, s->size);
+  V_MEMCPY(ss.base_pointer, s->base_pointer, s->size);
   return ss;
 }
 
 void reset_string(string *s) {
-  s->base_pointer = realloc(s->base_pointer, 1);
+  s->base_pointer = V_REALLOC(s->base_pointer, 1);
   *(int *)(s->base_pointer) = 0;
   s->size = char_size * 2;
   s->length = 0;
 }
 
 void free_string(string *s) {
-  free(s->base_pointer);
+  V_FREE(s->base_pointer);
   s->base_pointer = NULL;
   s->size = 0;
   s->length = 0;

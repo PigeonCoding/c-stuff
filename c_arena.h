@@ -36,7 +36,7 @@
 #ifndef V_FPRINTF
 #include <stdio.h>
 #define V_FPRINTF fprintf
-#endif
+#endif // V_FPRINTF
 
 typedef struct {
   size_t current_offset;
@@ -49,14 +49,14 @@ void *alloc_ptr(arena *a, size_t size);
 void reset_arena(arena* a);
 void free_arena(arena *a);
 
-#define C_ARENA
+// #define C_ARENA
 #ifdef C_ARENA
 arena alloc_arena(size_t size) {
   arena r;
-  r.base_pointer = malloc(size);
+  r.base_pointer = V_MALLOC(size);
   if (r.base_pointer == NULL) {
     V_FPRINTF(stderr, "buy more ram :)");
-    exit(1);
+    V_EXIT(1);
   }
 
   r.current_offset = 0;
@@ -67,7 +67,7 @@ arena alloc_arena(size_t size) {
 void *alloc_ptr(arena *a, size_t size) {
   if (a->base_pointer == NULL) {
     V_FPRINTF(stderr, "base pointer is null either it was not initialized or it has been freed :)\n");
-    exit(1);
+    V_EXIT(1);
   }
 
   if (size < a->size - a->current_offset) {
@@ -76,7 +76,7 @@ void *alloc_ptr(arena *a, size_t size) {
     return out;
   }
   V_FPRINTF(stderr, "ERROR: tried to allocate more than the arena had %zu > %zu\n", size , a->size - a->current_offset);
-  exit(1);
+  V_EXIT(1);
 }
 
 void reset_arena(arena* a) {
