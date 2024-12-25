@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
-#define C_STRING_IMPLEMENTATIONs
+#define C_STRING_IMPLEMENTATION
 #include "c_string.h"
 
 // version 0.1

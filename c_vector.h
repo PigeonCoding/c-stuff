@@ -89,8 +89,8 @@ void pop_element_from_vec(vector *vec, size_t index);
 #define end_foreach end_foreach_ref
 #endif
 
-// #define C_VECTOR
-#ifdef C_VECTOR
+// #define C_VECTOR_IMPLEMENTATION
+#ifdef C_VECTOR_IMPLEMENTATION
 
 struct vector {
   void *base_pointer;
@@ -212,4 +212,4 @@ void pop_element_from_vec(vector *vec, size_t index) {
   }
   vec->length -= 1;
 }
-#endif // C_VECTOR
+#endif // C_VECTOR_IMPLEMENTATION

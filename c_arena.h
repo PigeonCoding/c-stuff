@@ -43,8 +43,8 @@ void *alloc_ptr(arena *a, size_t size);
 void reset_arena(arena* a);
 void free_arena(arena *a);
 
-// #define C_ARENA
-#ifdef C_ARENA
+// #define C_ARENA_IMPLEMENTATION
+#ifdef C_ARENA_IMPLEMENTATION
 
 struct arena {
   size_t current_offset;
@@ -93,4 +93,4 @@ void free_arena(arena *a) {
   a->current_offset = 0;
   a->size = 0;
 }
-#endif // C_ARENA
+#endif // C_ARENA_IMPLEMENTATION

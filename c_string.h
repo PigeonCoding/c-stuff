@@ -97,7 +97,7 @@ int is_chars_empty(char *s);
 
 #endif
 
-// #define C_STRING
+// #define C_STRING_IMPLEMENTATION
 #ifdef C_STRING_IMPLEMENTATION
 
 struct string {
@@ -308,4 +308,4 @@ void free_string(string *s) {
   s->size = 0;
   s->length = 0;
 }
-#endif // C_STRING
+#endif // C_STRING_IMPLEMENTATION
