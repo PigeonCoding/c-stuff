@@ -97,7 +97,7 @@ struct vector {
   size_t size;
   size_t type_size;
   size_t length;
-}
+};
 
 void *internal_get_data_pointer(vector *a, size_t size);
 
