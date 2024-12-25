@@ -1,4 +1,4 @@
-#pragma once
+// #pragma once
 
 // version 0.5
 
@@ -60,15 +60,12 @@
 #define V_FPRINTF fprintf
 #endif
 
-typedef struct {
-  void *base_pointer;
-  size_t size;
-  size_t type_size;
-  size_t length;
-} vector;
+typedef struct vector vector;
 
 vector alloc_vector(size_t type_siz);
+#ifndef alloc_vector_sz
 #define alloc_vector_sz(sz) alloc_vector(sizeof(sz))
+#endif
 void prealloc_vector(vector *vec, size_t num);
 void *get_from_vec(vector *vec, size_t index);
 void reset_vector(vector *vec);
@@ -94,6 +91,14 @@ void pop_element_from_vec(vector *vec, size_t index);
 
 // #define C_VECTOR
 #ifdef C_VECTOR
+
+struct vector {
+  void *base_pointer;
+  size_t size;
+  size_t type_size;
+  size_t length;
+}
+
 void *internal_get_data_pointer(vector *a, size_t size);
 
 #define vforeach_ref_def(type, name, vector, i)                                \

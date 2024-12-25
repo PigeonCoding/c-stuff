@@ -1,18 +1,22 @@
 #pragma once
+
 #include <arpa/inet.h>
-#include <unistd.h>
 #include <stdio.h>
 #include <string.h>
-#define C_STRING
+#include <unistd.h>
+#define C_STRING_IMPLEMENTATIONs
 #include "c_string.h"
 
 // version 0.1
 
-#define BUFFER_SIZE 1024*2
+#define BUFFER_SIZE 1024 * 2
 
 #ifndef THREAD_NUM_SERVER
 #define THREAD_NUM_SERVER 8
-#endif
+#endif // THREAD_NUM_SERVER
+#ifndef QUEUE_LEN_SERVER
+#define QUEUE_LEN_SERVER 256
+#endif // QUEUE_LEN_SERVER
 
 #ifdef C_SERVER_MULTI
 #include <pthread.h>
@@ -27,8 +31,8 @@ typedef struct {
 Worker worker[THREAD_NUM_SERVER] = {0};
 #endif
 
-#define client_accept()                                                        \
-  accept(s.socket_server, (struct sockaddr *)&client_addr, &addr_len);         \
+#define client_accept(s)                                                       \
+  accept((s).socket_server, (struct sockaddr *)&client_addr, &addr_len);       \
   if (client_socket < 0) {                                                     \
     perror("Accept failed");                                                   \
     continue;                                                                  \
@@ -51,6 +55,8 @@ struct sockaddr_in client_addr;
 socklen_t addr_len = sizeof(client_addr);
 int client_socket;
 
+void init_threads();
+
 server init_server(int port) {
   server s = {0};
   s.port = port;
@@ -69,12 +75,16 @@ server init_server(int port) {
     exit(EXIT_FAILURE);
   }
 
-  if (listen(s.socket_server, 256) < 0) {
+  if (listen(s.socket_server, QUEUE_LEN_SERVER) < 0) {
     perror("Listen failed");
     exit(EXIT_FAILURE);
   }
 
   printf("Server listening on port %d\n", s.port);
+
+#ifdef C_SERVER_MULTI
+  init_threads();
+#endif
 
   return s;
 }
@@ -141,20 +151,13 @@ void gen_res(string *s, int code) {
     break;
   case c404:
     push_char_ptr(s, "HTTP/1.1 404 Not Found\r\nContent-Type: "
-                   "text/html\r\n\r\n<html><head><title>404 Not "
-                   "Found</title></head><body><h1>404 Not Found</h1><p>The "
-                   "requested URL was "
-                   "not found on this server.</p></body></html>");
+                     "text/html\r\n\r\n");
     break;
   case c503:
     push_char_ptr(
         s,
         "HTTP/1.1 503 Service Unavailable\r\nServer: Custom\r\nContent-Type: "
-        "text/html; charset=UTF-8\r\nRetry-After: 300\r\n<html> <head> "
-        "<title>503 Service Unavailable</title> </head> <body> <h1>Service "
-        "Unavailable</h1> <p>The server is currently unable to handle the "
-        "request due to a temporary overload or maintenance of the server. "
-        "Please try again later.</p> </body> </html>\n");
+        "text/html; charset=UTF-8\r\nRetry-After: 300\r\n");
     break;
   }
 }
@@ -228,7 +231,7 @@ void *income_multi() {
   while (1) {
     if (worker[i].client >= 0) {
       recv(worker[i].client, worker[i].buffer, sizeof(worker[i].buffer), 0);
-      push_string(&worker[i].buff_string, &(worker[i].buffer[0]));
+      push_char_ptr(&worker[i].buff_string, &(worker[i].buffer[0]));
 
       string_view path = get_path(worker[i].buff_string);
       string_view ip = get_ip(worker[i].buff_string);
@@ -241,7 +244,7 @@ void *income_multi() {
 
         handle_paths_multi(&worker[i]);
 
-        push_char_string(&worker[i].res, '\n');
+        push_char_to_string(&worker[i].res, '\n');
 
         send(worker[i].client, pseudo_str(worker[i].res), worker[i].res.length,
              0);
@@ -312,6 +315,9 @@ int find_available_worker() {
 //       string s = alloc_string();
 
 //       gen_res(&s, c503);
+// push_char_ptr(&current->res,
+// "<html><head><title>Error 404</title></head><body><h1>not "
+// "found lol</h1></body></html>");
 //       send(client_socket, pseudo_str(s), s.length, 0);
 //       close(client_socket);
 //       free_string(&s);

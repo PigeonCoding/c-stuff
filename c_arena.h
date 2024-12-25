@@ -1,5 +1,3 @@
-#pragma once
-
 // version 0.2
 
 /*
@@ -38,11 +36,7 @@
 #define V_FPRINTF fprintf
 #endif // V_FPRINTF
 
-typedef struct {
-  size_t current_offset;
-  void *base_pointer;
-  size_t size;
-} arena;
+typedef struct arena arena;
 
 arena alloc_arena(size_t size);
 void *alloc_ptr(arena *a, size_t size);
@@ -51,6 +45,13 @@ void free_arena(arena *a);
 
 // #define C_ARENA
 #ifdef C_ARENA
+
+struct arena {
+  size_t current_offset;
+  void *base_pointer;
+  size_t size;
+} ;
+
 arena alloc_arena(size_t size) {
   arena r;
   r.base_pointer = V_MALLOC(size);

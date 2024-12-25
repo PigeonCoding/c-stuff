@@ -1,5 +1,3 @@
-#pragma once
-
 // version 0.4
 
 /*
@@ -29,7 +27,6 @@
   (string_view) { .base_pointer = s.base_pointer, .length = s.length }
 #endif
 
-
 #ifndef V_CUSTOM_ALLOC
 #include <stdlib.h>
 #define V_MALLOC malloc
@@ -52,16 +49,8 @@
 #define V_FPRINTF fprintf
 #endif
 
-typedef struct {
-  void *base_pointer;
-  size_t size;
-  size_t length;
-} string;
-
-typedef struct {
-  void *base_pointer;
-  size_t length;
-} string_view;
+typedef struct string string;
+typedef struct string_view string_view;
 
 string alloc_string();
 void prealloc_string(string *s, size_t num);
@@ -72,7 +61,7 @@ void push_char_ptr(string *s, const char *c);
 void push_string_view(string *s, string_view s2);
 char *get_string_c(string *s);
 short int compare_str(const char *s1, const char *s2, size_t size,
-                      short int check_sz);
+                             short int check_sz);
 char *get_char(string *s, size_t index);
 void read_file(string *s, const char *filename);
 void read_file_without_comments(string *s, const char *filename);
@@ -109,7 +98,18 @@ int is_chars_empty(char *s);
 #endif
 
 // #define C_STRING
-#ifdef C_STRING
+#ifdef C_STRING_IMPLEMENTATION
+
+struct string {
+  void *base_pointer;
+  size_t size;
+  size_t length;
+};
+
+struct string_view {
+  void *base_pointer;
+  size_t length;
+};
 
 short int compare_str(const char *s1, const char *s2, size_t size,
                       short int check_sz) {
