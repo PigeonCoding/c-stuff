@@ -4,8 +4,6 @@
 #define compiler "cc"
 #define builder_name "c_builder"
 
-
-
 const char *files_check[] = {"main.c", "c_arena.h", "c_nice.h", "c_string.h",
                              "c_vector.h"};
 const char *builder_files[] = {"c_builder.c", "c_builder.h"};
@@ -39,8 +37,6 @@ int check_build() {
   return 0;
 }
 
-
-
 int main(int argc, char *argv[]) {
   // check_arg_num(2);
   init_builder();
@@ -54,8 +50,6 @@ int main(int argc, char *argv[]) {
     push_str_whitespace(cmd, "./build/main");
     exec_and_reset(cmd);
   }
-
-
 
   free_string(&cmd);
   free_string(&temp);
